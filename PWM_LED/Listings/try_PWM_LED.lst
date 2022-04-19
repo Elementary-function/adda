@@ -1,0 +1,123 @@
+C51 COMPILER V9.60.0.0   TRY_PWM_LED                                                       04/14/2022 10:04:10 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE TRY_PWM_LED
+OBJECT MODULE PLACED IN .\Objects\try_PWM_LED.obj
+COMPILER INVOKED BY: E:\Keil5\C51\BIN\C51.EXE try_PWM_LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\try_PWM_LED.lst) TABS(2) OBJECT(.\Objects\try_PWM_LED.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          
+   6          uint T_01ms = 1;
+   7          uint T_20ms_duty = 0;
+   8          uint count = 1;
+   9          
+  10          void Initsys();
+  11          void SelectHC138(uchar channel);
+  12          
+  13          void InitTimer0();
+  14          
+  15          void main()
+  16          {
+  17   1        InitTimer0();
+  18   1        Initsys();
+  19   1        SelectHC138(4);
+  20   1        while(1)
+  21   1        {
+  22   2          
+  23   2          if(T_01ms <= count)
+  24   2          {
+  25   3            P0 = 0XFE;
+  26   3          }
+  27   2          else if(T_01ms > count)
+  28   2          {
+  29   3            P0 = 0XFF;
+  30   3          }
+  31   2          else if(T_01ms == 141)
+  32   2          {
+  33   3            count++;
+  34   3            T_01ms = 0;
+  35   3          }
+  36   2          else if(count == 142)
+  37   2          {
+  38   3            count = 0;
+  39   3          }
+  40   2        }
+  41   1      }
+  42          
+  43          void InitTimer0()
+  44          {
+  45   1        TMOD = 0x01;
+  46   1        TH0 = (65535 - 100) / 256;
+  47   1        TL0 = (65535 - 100) % 256;
+  48   1        
+  49   1        ET0 = 1;
+  50   1        EA = 1;
+  51   1        TR0 = 1;
+  52   1      }
+  53          
+  54          void ServiceTimer0() interrupt 1
+C51 COMPILER V9.60.0.0   TRY_PWM_LED                                                       04/14/2022 10:04:10 PAGE 2   
+
+  55          {
+  56   1        TH0 = (65535 - 100) / 256;
+  57   1        TL0 = (65535 - 100) % 256;
+  58   1        
+  59   1        T_01ms++;
+  60   1      }
+  61          
+  62          //配置HC138
+  63          void SelectHC138(uchar channel)
+  64          {
+  65   1        switch(channel)
+  66   1        {
+  67   2          case 4:    //LED
+  68   2            P2 = (P2 & 0X1F) | 0X80;
+  69   2          break;
+  70   2          case 5:    //蜂鸣器和继电器
+  71   2            P2 = (P2 & 0X1F) | 0Xa0;
+  72   2          break;
+  73   2          case 6:    //位码
+  74   2            P2 = (P2 & 0X1F) | 0Xc0;
+  75   2          break;
+  76   2          case 7:    //段码
+  77   2            P2 = (P2 & 0X1F) | 0Xe0;
+  78   2          break;
+  79   2          case 0:    //锁住所有寄存器
+  80   2            P2 = (P2 & 0X1F) | 0X00;
+  81   2          break;
+  82   2        }
+  83   1      }
+  84          
+  85          //系统初始化
+  86          void Initsys()
+  87          {
+  88   1        SelectHC138(5);
+  89   1        P0 = 0X00;//关闭蜂鸣器和继电器
+  90   1        SelectHC138(4);
+  91   1        P0 = 0XFF;//关闭LED
+  92   1        
+  93   1        SelectHC138(6);
+  94   1        P0 = 0XFF; //选择所有数码管
+  95   1        SelectHC138(7);
+  96   1        P0 = 0XFF; //关闭所有数码管
+  97   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    203    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
